@@ -4,7 +4,6 @@ from git import Repo
 import os
 from flask import jsonify
 from flask import request
-import radon
 import json
 from pprint import pprint
 import requests
@@ -24,7 +23,7 @@ def getWork():
 
 def doWork(commit_number):
 	for commit in list(repo.iter_commits()):
-    	commit.stats.files
+		commit.stats.files
 
 def submitWork(commit_number, commit_complexity):
 	print("bye")
