@@ -41,9 +41,11 @@ def getUnassignedWork():
 	work = mongo_db.work.find_one({'completed' : False, "worker": ""})
 	return work
 
-@application.route('/getWork', methods=['GET'])
+@application.route('/getWork', methods=['POST'])
 def giveWork():
 	#get work from db, give to requester
+	worker_data = request.get_json(force=True)
+
 	workToDo = getUnassignedWork()
 	if workToDo is None:
 		return jsonify({"Finished": True})
@@ -51,7 +53,7 @@ def giveWork():
 	file = workToDo
 	jsonString = {"Finished": False, "file": file.get("file_path"), "commit_number": file.get("commit")}
 
-	mongo_db.work.update_one({'file_path': file.get("file_path")}, {"$set":{"worker": mongo_db.workers.find_one({"address": request.remote_addr}), "start_time": datetime.datetime.now()}})
+	mongo_db.work.update_one({'file_path': file.get("file_path")}, {"$set":{"worker": mongo_db.workers.find_one({"id": worker_data.get("worker_id")}), "start_time": datetime.datetime.now()}})
 
 	return jsonify(jsonString)
 
@@ -85,7 +87,7 @@ def compileWorkList():
 
 		for f in files:
 			local_file_path = f[len(folder_path):]
-			file = {"commit": str(commit), "file_path": local_file_path, "start_time": -1, "completed": False, "worker": "", "worker_addr": "", "cyclo_comp": -1}
+			file = {"commit": str(commit), "file_path": local_file_path, "start_time": -1, "completed": False, "worker": "", "cyclo_comp": -1}
 			mongo_db.work.insert(file)
 
 

@@ -35,6 +35,8 @@ def registerWorkerNode():
 	global git_repo_url
 	git_repo_url = response.json().get('repo_url')
 
+	print("Registered as: Worker#", workerId)
+
 def submitWork(file, commit, score):
 	folder_path = home_directory + "/.worker" + str(workerId)
 	path_to_file = file[len(folder_path):]
@@ -61,7 +63,8 @@ def doWork(file, commit):
 	submitWork(path_to_file, commit, score)
 
 def requestWork():
-	response = requests.get(full_serv_addr + "/getWork", headers=headers)
+	data = {"worker_id": workerId}
+	response = requests.post(full_serv_addr + "/getWork", data=json.dumps(data), headers=headers)
 	response_json = response.json()
 
 	if response_json.get('Finished') is True:
