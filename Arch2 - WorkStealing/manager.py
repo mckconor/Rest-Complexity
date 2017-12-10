@@ -53,7 +53,7 @@ def giveWork():
 	file = workToDo
 	jsonString = {"Finished": False, "file": file.get("file_path"), "commit_number": file.get("commit")}
 
-	mongo_db.work.update_one({'file_path': file.get("file_path")}, {"$set":{"worker": mongo_db.workers.find_one({"id": worker_data.get("worker_id")}), "start_time": datetime.datetime.now()}})
+	mongo_db.work.update_one({'file_path': file.get("file_path"), "commit": file.get("commit")}, {"$set":{"worker": mongo_db.workers.find_one({"id": worker_data.get("worker_id")}), "start_time": datetime.datetime.now()}})
 
 	return jsonify(jsonString)
 
