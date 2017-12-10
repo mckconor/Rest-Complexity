@@ -38,7 +38,7 @@ def register():
 	return jsonify(jsonString)
 
 def getUnassignedWork():
-	work = mongo_db.work.find_one({'completed' : False})
+	work = mongo_db.work.find_one({'completed' : False, "worker": ""})
 	return work
 
 @application.route('/getWork', methods=['GET'])
@@ -69,12 +69,6 @@ def receiveWork():
 
 	return jsonify({"response_code": 200})
 
-
-def getAllFiles ():
-	files = glob.glob(home_directory + "/managerRepo" + '/**/*' + ext, recursive = True)
-	return files
-
-
 def compileWorkList():
 	#Download copy of repo
 	if(os.path.exists(home_directory + "/.managerRepo") != True):
@@ -86,10 +80,12 @@ def compileWorkList():
 	list_of_commits = list(repo.iter_commits())
 	for commit in list_of_commits:
 		repo.git.checkout(commit)
-		files = glob.glob(home_directory + "/.managerRepo" + '/**/*' + ".py", recursive = True)
+		folder_path = home_directory + "/.managerRepo"
+		files = glob.glob(folder_path + '/**/*' + ".py", recursive = True)
 
 		for f in files:
-			file = {"commit": str(commit), "file_path": f, "start_time": -1, "completed": False, "worker": "", "worker_addr": "", "cyclo_comp": -1}
+			local_file_path = f[len(folder_path):]
+			file = {"commit": str(commit), "file_path": local_file_path, "start_time": -1, "completed": False, "worker": "", "worker_addr": "", "cyclo_comp": -1}
 			mongo_db.work.insert(file)
 
 

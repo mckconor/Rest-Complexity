@@ -36,24 +36,29 @@ def registerWorkerNode():
 	git_repo_url = response.json().get('repo_url')
 
 def submitWork(file, commit, score):
-	results = {'file': file, 'commit': commit, 'score': score}
+	folder_path = home_directory + "/.worker" + str(workerId)
+	path_to_file = file[len(folder_path):]
+	results = {'file': path_to_file, 'commit': commit, 'score': score}
 	requests.post(full_serv_addr + "/submitWork", data=json.dumps(results), headers=headers)
 
 def doWork(file, commit):
-	if(os.path.exists(home_directory + "/.worker" + str(workerId)) != True):
+	folder_path = home_directory + "/.worker" + str(workerId)
+	if(os.path.exists(folder_path) != True):
 		print(git_repo_url)
-		repo = Repo.clone_from(git_repo_url, home_directory + "/.worker" + str(workerId))
+		repo = Repo.clone_from(git_repo_url, folder_path)
 	else:
-		repo = Repo(home_directory + "/.worker" + str(workerId))
+		repo = Repo(folder_path)
 
 	#checkout commit
 	repo_checkout = repo.git.checkout(commit)
 
-	score = lizard.analyze_file(file).average_cyclomatic_complexity
+	path_to_file = folder_path + file
 
-	print("File: ", file, "\nCommit: ", commit, "\nCC: ", score)
+	score = lizard.analyze_file(path_to_file).average_cyclomatic_complexity
 
-	submitWork(file, commit, score)
+	print("File: ", path_to_file, "\nCommit: ", commit, "\nCC: ", score)
+
+	submitWork(path_to_file, commit, score)
 
 def requestWork():
 	response = requests.get(full_serv_addr + "/getWork", headers=headers)
