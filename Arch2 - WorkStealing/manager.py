@@ -10,7 +10,6 @@ import pymongo
 
 application = Flask(__name__)
 
-# git_repo_url = "https://github.com/mckconor/Scalable-Computing-TCPServer"
 git_repo_url = "https://github.com/mckconor/Python-DFS"
 home_directory = os.path.dirname(os.path.realpath('__file__'))
 
@@ -35,7 +34,7 @@ def register():
 
 	mongo_db.workers.insert(worker)
 
-	jsonString = {"response_code": 200}
+	jsonString = {"worker_id": worker_id, "repo_url": git_repo_url, "response_code": 200}
 	return jsonify(jsonString)
 
 def getUnassignedWork():
@@ -46,17 +45,29 @@ def getUnassignedWork():
 def giveWork():
 	#get work from db, give to requester
 	workToDo = getUnassignedWork()
+	if workToDo is None:
+		return jsonify({"Finished": True})
 
-	file = workToDo.get("file_path")
-	jsonString = {"file": file}
+	file = workToDo
+	jsonString = {"Finished": False, "file": file.get("file_path"), "commit_number": file.get("commit")}
 
-	mongo_db.work.update_one({'file_path': file}, {"$set":{"worker": mongo_db.workers.find_one({"address": request.remote_addr})}})
+	mongo_db.work.update_one({'file_path': file}, {"$set":{"worker": mongo_db.workers.find_one({"address": request.remote_addr}), "start_time": datetime.datetime.now()}})
 
 	return jsonify(jsonString)
 
-@application.route('/submitWork', methods=['GET'])
+@application.route('/submitWork', methods=['POST'])
 def receiveWork():
-	print("")
+	#Work in
+	work_results = request.get_json(force=True)
+
+	file_path = work_results.get("file")
+	commitNumber = work_results.get("commit")
+	score = work_results.get("score")
+
+	work = mongo_db.work.find_one({'file_path' : file_path, "commit": commitNumber})
+	mongo_db.work.update_one({'file_path' : file_path, "commit": commitNumber}, {"$set":{"cyclo_comp": score, "completed": True}})
+
+	return jsonify({"response_code": 200})
 
 
 def getAllFiles ():
