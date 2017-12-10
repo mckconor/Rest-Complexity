@@ -10,7 +10,7 @@ import pymongo
 
 application = Flask(__name__)
 
-git_repo_url = "https://github.com/mckconor/Python-DFS"
+git_repo_url = "https://github.com/mckconor/Rest-Complexity" #"https://github.com/mckconor/Python-DFS"
 home_directory = os.path.dirname(os.path.realpath('__file__'))
 
 serv_addr = "localhost"
@@ -51,7 +51,7 @@ def giveWork():
 	file = workToDo
 	jsonString = {"Finished": False, "file": file.get("file_path"), "commit_number": file.get("commit")}
 
-	mongo_db.work.update_one({'file_path': file}, {"$set":{"worker": mongo_db.workers.find_one({"address": request.remote_addr}), "start_time": datetime.datetime.now()}})
+	mongo_db.work.update_one({'file_path': file.get("file_path")}, {"$set":{"worker": mongo_db.workers.find_one({"address": request.remote_addr}), "start_time": datetime.datetime.now()}})
 
 	return jsonify(jsonString)
 
