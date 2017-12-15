@@ -1,7 +1,5 @@
 # Rest Service Development Task
 
-### Ignore Master/Slave architecture, not enough time given to complete. Manager/Worker fully implemented.
-
 To run, open multiple cmd or powershell windows use the following commands:
 
 -python .\manager.py
