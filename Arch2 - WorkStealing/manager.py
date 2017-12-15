@@ -4,6 +4,7 @@ import collections
 from flask import jsonify
 from flask import request
 import os
+import time
 import datetime
 import glob
 import pymongo
@@ -24,6 +25,10 @@ mongo_db.work.drop()
 
 @application.route('/register', methods=['POST'])
 def register():
+	#Only get timestamp when registering first worker
+	if(mongo_db.workers.count() < 1):
+		getWorkStartedAt()
+
 	#register worker
 	worker_data = request.get_json(force=True)
 
@@ -43,11 +48,13 @@ def getUnassignedWork():
 
 @application.route('/getWork', methods=['POST'])
 def giveWork():
+
 	#get work from db, give to requester
 	worker_data = request.get_json(force=True)
 
 	workToDo = getUnassignedWork()
 	if workToDo is None:
+		printTimeTaken()
 		return jsonify({"Finished": True})
 
 	file = workToDo
@@ -57,6 +64,23 @@ def giveWork():
 
 	return jsonify(jsonString)
 
+workStartedAt = 0
+def getWorkStartedAt():
+	global workStartedAt
+	workStartedAt = time.time()
+
+def printTimeTaken():
+	workFinishedAt = time.time()
+	print("workStartedAt: ", workStartedAt)
+	print("workFinishedAt: ", workFinishedAt)
+	timeToComplete = workFinishedAt - workStartedAt
+
+	print("Number of workers: ", mongo_db.workers.count())
+	print("Time to compute: ", timeToComplete)
+	print("Average Cyclomatic Complexity: ", averageComplexity/(mongo_db.work.count()))
+
+
+averageComplexity = 0
 @application.route('/submitWork', methods=['POST'])
 def receiveWork():
 	#Work in
@@ -65,6 +89,9 @@ def receiveWork():
 	file_path = work_results.get("file")
 	commitNumber = work_results.get("commit")
 	score = work_results.get("score")
+
+	global averageComplexity
+	averageComplexity += score
 
 	work = mongo_db.work.find_one({'file_path' : file_path, "commit": commitNumber})
 	mongo_db.work.update_one({'file_path' : file_path, "commit": commitNumber}, {"$set":{"cyclo_comp": score, "completed": True}})
