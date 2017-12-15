@@ -13,11 +13,17 @@ The manager delegates unnassigned work to each worker.py that is spun up.
 
 ## New!
 -Added results to manager screen when complete:
+
 workStartedAt:  1513377685.5650442
+
 workFinishedAt:  1513377699.3102243
+
 Number of workers:  3
+
 Time to compute:  13.745180130004883
+
 Average Cyclomatic Complexity:  0.8849673202614382
+
 
 ## To-do (if had more time)
 -Reallocate work if worker times out on file
